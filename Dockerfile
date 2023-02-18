@@ -1,24 +1,23 @@
-FROM alpine
+ARG GO_VERSION=1.19
 
-LABEL maintainer="Chaney <csl@live.com>"
+FROM golang:${GO_VERSION}-alpine AS builder
 
-# Copy python requirements file
-COPY conf/requirements.txt /tmp/requirements.txt
-RUN apk add --no-cache \
-    python3 \
-    bash \
-    supervisor && \
-    python3 -m ensurepip && \
-    rm -r /usr/lib/python*/ensurepip && \
-    pip3 install --upgrade pip setuptools && \
-    pip3 install -r /tmp/requirements.txt && \
-    rm -r /root/.cache
+RUN apk update && apk add alpine-sdk git && rm -rf /var/cache/apk/*
 
-# Custom Supervisord config
-COPY conf/supervisord.conf /etc/supervisord.conf
+WORKDIR /api
+
+COPY src/ .
+
+RUN go mod tidy && go build -o ./app ./main.go
 
 
-COPY ./app /app
-WORKDIR /app
+FROM alpine:latest
 
-CMD ["/usr/bin/supervisord"]
+RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
+
+WORKDIR /api
+COPY --from=builder /api/app .
+
+EXPOSE 8080
+
+ENTRYPOINT ["./app"]
