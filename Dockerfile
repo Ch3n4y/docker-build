@@ -1,4 +1,4 @@
-FROM node:lts-alpine3.17 AS frontend
+FROM node:21 AS frontend
 
 # 安装Rust和wasm-pack
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
