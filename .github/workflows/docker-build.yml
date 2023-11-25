@@ -1,13 +1,21 @@
-name: Publish Docker
-on: [push]
+name: Build and Publish Docker
+
+on:
+  push:
+    branches:
+      - main  # 替换为您的目标分支
+
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Publish to Registry
-      uses: elgohr/Publish-Docker-Github-Action@master
+    - uses: actions/checkout@v3
+
+    - name: Build and Push Docker image
+      uses: elgohr/Publish-Docker-Github-Action@v5
       with:
-        name: ch3n4y/alisign
+        name: ch3n4y/node-rust-env  # 替换为您的 Docker Hub 用户名和镜像名
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+        tags: "latest,${{ github.sha }}"  # 标签列表
+        dockerfile: Dockerfile  # 指定 Dockerfile 路径
